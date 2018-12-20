@@ -5,6 +5,8 @@
 
 
 using System;
+using System.Collections.Generic;
+using System.Drawing;
 using System.Windows.Forms;
 
 namespace MineSweeper
@@ -14,7 +16,7 @@ namespace MineSweeper
     public partial class Form1 : Form
     {
         public int MintNumber = 3;
-
+        List<Button> buttons = new List<Button>();
         public Form1()
         {
             InitializeComponent();
@@ -25,37 +27,51 @@ namespace MineSweeper
         /// </summary>
         private void GenerateAll()
         {
-            for (int i = 0; i < 3; i++)
+            SeedMines();
+            ForeachAll();
+        }
+
+        private void ForeachAll()
+        {
+            foreach (var item in buttons)
             {
-                for (int j = 0; j < 3; j++)
+                Block btnBlock = item.Tag as Block;
+                if (btnBlock._blockType == Block.BlockType.Mine)
                 {
-                    Button btn = new Button();
-                    btn.Width = 38;
-                    btn.Height = 38;
-                    btn.FlatStyle = FlatStyle.Popup;
-                    btn.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                 | System.Windows.Forms.AnchorStyles.Left)
-                 | System.Windows.Forms.AnchorStyles.Right)));
-                    btn.Margin = new Padding(0);
-                    tableLayoutPanel1.Controls.Add(btn, i, j);
-                    btn.BackgroundImageLayout = ImageLayout.Stretch;
-                    int ran = new Random().Next(0, 3);
-                    if (ran == 1)
-                    {
-                        btn.Tag = "我是雷";
-                      
-                    }
-                    else
-                    {
-                        btn.Tag = "我不是雷";
-                    }
-                   
-                    
-                    btn.Click += Btn_Click;
+                    continue;
                 }
+                Pos left = new Pos(btnBlock._pos.X-1,btnBlock._pos.Y) ;
+                Pos left_up = new Pos(btnBlock._pos.X - 1, btnBlock._pos.Y - 1);
             }
         }
 
+        public void SeedMines()
+        {
+            for (int i = 0; i < 10; i++)
+            {
+                for (int j = 0; j < 10; j++)
+                {
+                    Button btn = new Button(); 
+                    btn.FlatStyle = FlatStyle.Popup;
+                    btn.Anchor = (((((AnchorStyles.Top | AnchorStyles.Bottom) | AnchorStyles.Left) | AnchorStyles.Right)));
+                    btn.Margin = new Padding(0);
+                    tableLayoutPanel1.Controls.Add(btn, i, j);
+                    btn.BackgroundImageLayout = ImageLayout.Stretch;
+                    int ran = new Random().Next(0, 100);
+                    if (ran > 50)
+                    {
+                        btn.Tag = new Block(new Pos(i,j),Block.BlockType.Mine);
+
+                    }
+                    else
+                    {
+                        btn.Tag = new Block(new Pos(i, j));
+                    }
+                    btn.Click += Btn_Click;
+                    buttons.Add(btn);
+                }
+            }
+        }
         private void Btn_Click(object sender, System.EventArgs e)
         {
             Button btn = sender as Button;
@@ -68,31 +84,27 @@ namespace MineSweeper
     }
     public class Block
     {
-        private Status status;
-        public Button buttons;
+        public enum BlockType { None, Number, Mine }
+        public BlockType _blockType;
+        public Pos _pos;
+        public Block (Pos pos,BlockType blockType = BlockType.None)
+        {
+            _pos = pos;
 
-        public Status Status {
-
-            get
-            {
-                return status;
-            }
-            set
-            {
-                switch (value)
-                {
-                    case Status.None:
-                        break;
-                    case Status.Mine:
-                        break;
-                    case Status.Number:
-                        break;
-                    default:
-                        break;
-                }
-                status = value;
-            }
-
+            _blockType = blockType; 
+        }
+    }
+    /// <summary>
+    ///位置包装
+    /// </summary>
+    public class Pos
+    {
+        public int X { get; set; }
+        public int Y { get; set; }
+        public Pos(int x, int y)
+        {
+            X = x;
+            Y = y;
         }
     }
 }
